@@ -1,3 +1,4 @@
+-- By AuriaFoxGirl
 -- config
 local conf = {
    patParticle = "minecraft:heart", -- particle that will be used when patting

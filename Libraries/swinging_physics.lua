@@ -1,4 +1,4 @@
--- Swinging Physics by Manuel_
+-- Swinging Physics by Manuel_2867
 modName = "manuel_.swinging_physics"
 
 local SwingingPhysics = {}
