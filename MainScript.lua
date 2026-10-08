@@ -7,9 +7,10 @@ vanilla_model.RIGHT_ARM:setOffsetRot(0, 0, 7.5)
 -- Donator Badge Colour
 avatar:setColor(230/255, 0/255, 0/255, "donator")
 
--- Create variable for aiming detection
+-- Create variables for things
 local aiming = nil
-local wasAiming
+local wasAiming = nil
+local sleepEnabled = false
 
 --Configure Custom Sounds
 local soundTwilight = sounds["Hit"]
@@ -19,12 +20,6 @@ soundStagger:setSubtitle("§c§lIdalia Staggers"):setVolume(0.6)
 
 -- Config to store ping variables
 config:name("Idalia")
-
--- If SillyPlugin is installed, enable creative flight
-if silly then
-	silly:setFly(true)
-	renderer:setRenderFire(false)
-end
 
 -- Shared performance budget. Expensive libraries can use this to yield before
 -- Figura reaches its tick/render instruction limits. This follows the same
@@ -130,9 +125,6 @@ BladeTrail.configure({
 
 -- Character 2's old trail used BladeTrailEyes templates. The Character 1 system does not.
 pcall(function() models.idalia.BladeTrailEyes:setVisible(false) end)
-
--- Set default action wheel states
-local sleepEnabled = false
 
 -- Animation Settings
 animations.idalia.HoloMenu_Idle:setPlaying(true)
@@ -241,6 +233,14 @@ function pings.holoMenu(state)
 	end
 end
 
+-- Flight Toggle
+function pings.flight(state)
+	SyncedFlightState = state
+    animations.idalia.Flight:setPlaying(state)
+	models.idalia.root.Body.Wings:setVisible(state)
+end
+
+------------------------------------------------------------------------------- ACTION WHEEL THINGS ------------------------------------------------
 local mainPage = action_wheel:newPage()
 action_wheel:setPage(mainPage)
 
@@ -250,13 +250,6 @@ function pings.ToggleSleep(state)
     models.idalia.EepEffect:setVisible(state)
     animations.idalia.Sleep:setPlaying(state)
     config:save("Sleep", state)
-end
-
--- Flight Toggle
-function pings.flight(state)
-	SyncedFlightState = state
-    animations.idalia.Flight:setPlaying(state)
-	models.idalia.root.Body.Wings:setVisible(state)
 end
 
 -- Eep syncing
@@ -281,6 +274,15 @@ function ToggleSleep(state)
     end
 end
 
+-- Eep action wheel
+SleepAction = mainPage:newAction()
+    :title("The Eeper")
+    :toggleTitle("No eeping")
+    :item("black_bed")
+    :toggleItem("barrier")
+    :setOnToggle(ToggleSleep)
+SleepAction:setToggled(SleepEnabled)
+
 -- Stagger toggle
 function pings.Stagger(state)
     animations.idalia.Stagger:setPlaying(state)
@@ -297,15 +299,6 @@ Stagger = mainPage:newAction()
     :toggleItem("red_wool")
     :setOnToggle(pings.Stagger)
 
--- Eep action wheel
-SleepAction = mainPage:newAction()
-    :title("The Eeper")
-    :toggleTitle("No eeping")
-    :item("black_bed")
-    :toggleItem("barrier")
-    :setOnToggle(ToggleSleep)
-SleepAction:setToggled(SleepEnabled)
-
 -- Fixer License pull out Toggle
 function pings.License(state)
 	animations.idalia.ShowLicense:setPlaying(state)
@@ -318,6 +311,18 @@ License = mainPage:newAction()
 	:item("minecraft:globe_banner_pattern")
 	:toggleItem("barrier")
 	:setOnToggle(pings.License)
+
+-- SillyPlugin flight toggle
+function pings.FlightToggle(state)
+	if silly then silly:setFly(state) end
+end
+
+FlightToggle = mainPage:newAction()
+    :title("Cannot Fly")
+    :toggleTitle("Can Fly")
+    :item("feather")
+    :toggleItem("elytra")
+    :setOnToggle(pings.FlightToggle)
 
 -- Initialize body lean variables
 local bodyPitch = 0
