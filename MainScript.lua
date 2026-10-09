@@ -313,7 +313,7 @@ License = mainPage:newAction()
 	:setOnToggle(pings.License)
 
 -- SillyPlugin flight toggle
-function pings.FlightToggle(state)
+function FlightToggle(state)
 	if silly then silly:setFly(state) end
 end
 
@@ -322,7 +322,7 @@ FlightToggle = mainPage:newAction()
     :toggleTitle("Can Fly")
     :item("feather")
     :toggleItem("elytra")
-    :setOnToggle(pings.FlightToggle)
+    :setOnToggle(FlightToggle)
 
 -- Initialize body lean variables
 local bodyPitch = 0
@@ -342,7 +342,7 @@ function events.entity_init()
     local sleepInit = config:load("Sleep")
     
     if sleepInit ~= nil and SleepEnabled ~= sleepInit then
-        sleepEnabled = sleepInit
+        SleepEnabled = sleepInit
         models.idalia.EepEffect:setVisible(SleepEnabled)
         animations.idalia.Sleep:setPlaying(SleepEnabled)
         SleepAction:setToggled(SleepEnabled)
@@ -500,7 +500,7 @@ function events.tick()
     --Detect Container open or AFK for HoloMenu
 	if host:isHost() then
 		if (host:isContainerOpen() or not client:isWindowFocused() or host:getScreen() == "net.minecraft.class_433") ~= SyncedMenuState then
-			pings.holoMenu(host:isContainerOpen() and not sleepEnabled or not client:isWindowFocused() and not sleepEnabled or host:getScreen() == "net.minecraft.class_433" and not sleepEnabled)
+			pings.holoMenu(host:isContainerOpen() and not SleepEnabled or not client:isWindowFocused() and not SleepEnabled or host:getScreen() == "net.minecraft.class_433" and not SleepEnabled)
 		end
 	end
 	
@@ -519,6 +519,7 @@ function events.tick()
 	local headRot = vanilla_model.HEAD:getOriginRot()
 	aiming = player:getActiveItem():getUseAction() == "BOW"
 	local emptyOffhand = player:getHeldItem(true).id == "minecraft:air" or player:getHeldItem(true).id == "minecraft:shield"
+	local emptyMainhand = player:getHeldItem().id == "minecraft:air"
 	
 	-- Play animations in certain scenarios
 	models.idalia.root.Head.HoloMenu:setVisible(SyncedMenuState or (animations.idalia.HoloMenu_Disapear:isPlaying() and animations.idalia.HoloMenu_Disapear:getTime() < 0.46))
@@ -532,7 +533,7 @@ function events.tick()
 		and not rifleOut
 	)
 	vanilla_model.LEFT_ITEM:setVisible(not emptyOffhand)
-	animations.idalia.FlightIdle:setPlaying(animations.idalia.Flight:isPlaying() and emptyOffhand)
+	animations.idalia.FlightIdle:setPlaying(SyncedFlightState and emptyMainhand)
 	
 	-- Handle Aiming animation
 	if aiming == true and rifleOut then
