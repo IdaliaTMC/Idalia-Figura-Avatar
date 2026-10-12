@@ -62,8 +62,10 @@ function PerformanceBudget.renderAllowed(fraction)
 	return used < max * (fraction or PerformanceBudget.renderFraction or 0.70)
 end
 
--- Valid sword names (shared with the combat controller)
+-- Valid gear names (Sword shared with the combat controller)
 local validSword = {["Twilight"] = true, ["Hero"] = true, ["Guardian"] = true, ["Shield"] = true}
+local validStaff = {["Twilight Staff"] = true, ["Novice Spell Book"] = true, ["Mage's Spell Book"] = true, ["Archmage Spell Book"] = true, ["󏀀Shiny Halcyon󏀀"] = true,}
+local validRifle = {["Twilight Rifle"] = true}
 
 -- Combat system stuff
 local Combat=require("Libraries.CombatSystem")
@@ -139,6 +141,7 @@ animations.idalia.Sitting:setPriority(5)
 animations.idalia.twilightIdle:setSpeed(0.3)
 
 -- Set emissive textures
+models:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.ItemTwilight.blade.eyes2:setPrimaryRenderType("EMISSIVE")
 models.idalia.Arrow:setPrimaryRenderType("EMISSIVE")
 models.idalia.root.Body.Wings.RightWingPivot.RightWingEyes:setPrimaryRenderType("EMISSIVE")
@@ -162,6 +165,15 @@ local bounce = squapi.bounceWalk:new(
     models.idalia.root,    --model
     0.0     --(1) bounceMultiplier
 )
+
+-- Initialize body lean variables
+local bodyPitch = 0
+local bodyRoll = 0
+local armSpread = 0
+
+local bodyPitchOld = 0
+local bodyRollOld = 0
+local armSpreadOld = 0
 
 -- Punishing bird that follows player
 animations.idalia.BirbIdle:play()
@@ -324,18 +336,6 @@ FlightToggle = mainPage:newAction()
     :toggleItem("elytra")
     :setOnToggle(FlightToggle)
 
--- Initialize body lean variables
-local bodyPitch = 0
-local bodyRoll = 0
-local armSpread = 0
-
-local bodyPitchOld = 0
-local bodyRollOld = 0
-local armSpreadOld = 0
-
--- Valid names for the model to replace
-local validStaff = {["Twilight Staff"] = true, ["Novice Spell Book"] = true, ["Mage's Spell Book"] = true, ["Archmage Spell Book"] = true, ["󏀀Shiny Halcyon󏀀"] = true,}
-local validRifle = {["Twilight Rifle"] = true}
 
 -- Eep syncing
 function events.entity_init()
