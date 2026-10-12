@@ -155,7 +155,7 @@ local backSword = models.idalia.ItemTwilight:copy("BackTwilight"):setParentType(
 -- Dependancies
 local squapi = require("Libraries.SquAPI")
 local squassets = require("Libraries.SquAPI_modules/SquAssets")
-local patpat = require("Libraries.patpat")
+local patcubed = require("Libraries.patcubed")
 local dronezAPI = require("Libraries.dronezAPI")
 local runLater = require("Libraries.runLater")
 
