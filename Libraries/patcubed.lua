@@ -22,10 +22,17 @@ local CONFIG = {
 	},
 	whitelist = {
 		player = {
-			"r4inbowsugar"
+			"UndeadReturns",
+			"Solicitouss",
+			"RedDevelop",
+			"ItsBobbyYo",
+			"Jueunii",
+			"TheEpicMelon_",
+			"NikoSolstice",
+			"Simon255"
 		}, -- "ANYONE"|TABLE
 		skull = "FOLLOWS_PLAYER", -- "ANYONE"|"FOLLOWS_PLAYER"|TABLE
-		is_blacklist = true, -- boolean
+		is_blacklist = false, -- boolean
 	},
 	cooldown = 1, -- 1 pat, per person, per tick
 	delay = 3, -- 1 pat every 3 ticks

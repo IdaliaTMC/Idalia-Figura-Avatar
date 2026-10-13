@@ -128,6 +128,9 @@ BladeTrail.configure({
 -- Character 2's old trail used BladeTrailEyes templates. The Character 1 system does not.
 pcall(function() models.idalia.BladeTrailEyes:setVisible(false) end)
 
+-- Copy sword to use on the back
+local backSword = models.idalia.ItemTwilight:copy("BackTwilight"):setParentType("MODEL"):moveTo(models.idalia.root.Body):setPos(14,36,1):setRot(0,0,135):setScale(0.95)
+
 -- Animation Settings
 animations.idalia.HoloMenu_Idle:setPlaying(true)
 animations.idalia.Drone:setPlaying(true)
@@ -141,7 +144,10 @@ animations.idalia.Sitting:setPriority(5)
 animations.idalia.twilightIdle:setSpeed(0.3)
 
 -- Set emissive textures
-models:setPrimaryRenderType("TRANSLUCENT_CULL")
+models.idalia.root:setPrimaryRenderType("TRANSLUCENT_CULL")
+models.idalia.Skull:setPrimaryRenderType("TRANSLUCENT_CULL")
+backSword:setPrimaryRenderType("TRANSLUCENT")
+models.idalia.root.Body.Coat.LowerCoat:setPrimaryRenderType("TRANSLUCENT")
 models.idalia.ItemTwilight.blade.eyes2:setPrimaryRenderType("EMISSIVE")
 models.idalia.Arrow:setPrimaryRenderType("EMISSIVE")
 models.idalia.root.Body.Wings.RightWingPivot.RightWingEyes:setPrimaryRenderType("EMISSIVE")
@@ -149,13 +155,9 @@ models.idalia.root.Body.Wings.LeftWingPivot.LeftWingEyes:setPrimaryRenderType("E
 models.idalia.WORLD.Freecam.DroneCam.DroneLights:setPrimaryRenderType("EMISSIVE")
 models.idalia.root.Head.Eyes.Irises:setPrimaryRenderType("EMISSIVE")
 
--- Copy sword to use on the back
-local backSword = models.idalia.ItemTwilight:copy("BackTwilight"):setParentType("MODEL"):moveTo(models.idalia.root.Body):setPos(14,36,1):setRot(0,0,135):setScale(0.95)
-
 -- Dependancies
 local squapi = require("Libraries.SquAPI")
 local squassets = require("Libraries.SquAPI_modules/SquAssets")
-local patcubed = require("Libraries.patcubed")
 local dronezAPI = require("Libraries.dronezAPI")
 local runLater = require("Libraries.runLater")
 
