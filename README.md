@@ -14,7 +14,7 @@ And no, lightly editing it is not enough to claim it as yours. It's my character
 Original Twilight model - septemberbegaming<br>
 Beret, Scarf and Ears - Comissioned to RuotaCheGira<br>
 Original longcoat model - danykub77<br>
-Blade Trail and Combat System - UndeadReturns<br>
+Blade Trail, Combat System and typing anim - UndeadReturns<br>
 BobFreeCam - BobIsBilly<br>
 DronezAPI - PirateSee<br>
 Lift - Fox AKA Bitslayn<br>

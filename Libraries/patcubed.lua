@@ -1,6 +1,7 @@
 local eventpresent, event = pcall(require, "./event") -- GN's event lib (optional)
 
 local CONFIG = {
+	compat = {},
 	callbacks = {
 		player = {
 			startPat = {},
@@ -19,6 +20,10 @@ local CONFIG = {
 			stopPat = {},
 			onPat = {function() animations.idalia.HeadPatPat:play() end}
 		},
+		compat = { -- These are for internal use. Do not use these unless you know what you're doing.
+			patOther = {}
+		}
+
 	},
 	whitelist = {
 		player = {
@@ -80,7 +85,7 @@ local bind = keybinds:fromVanilla("key.use")
 local timers = {}
 local skullTimers = {}
 local patMethods = {}
-local entitycooldowns = {}
+local entityCooldowns = {}
 local skullCooldowns = {}
 local validateMethods = {}
 
@@ -119,6 +124,7 @@ local function whitelisted(person, key)
 
 		return CONFIG.whitelist.is_blacklist
 	else
+		print(person)
 		return world.getPlayers()[person] and whitelisted(world.getPlayers()[person]:getUUID(), key) or false
 	end
 end
@@ -147,9 +153,9 @@ local function prompter(uuid)
 			-- fixes an issue where you can hang onto old instances past the avatar lifetime.
 			if not current_session_valid() then return false end
 			if not whitelisted(uuid, "player") then return false end
-			if not entitycooldowns[uuid] then entitycooldowns[uuid] = 0 end
-			if entitycooldowns[uuid] > 0 then return false end
-			entitycooldowns[uuid] = CONFIG.cooldown
+			if not entityCooldowns[uuid] then entityCooldowns[uuid] = 0 end
+			if entityCooldowns[uuid] > 0 then return false end
+			entityCooldowns[uuid] = CONFIG.cooldown
 
 			if not call("player", "onPat", uuid) then
 				return false
@@ -253,8 +259,8 @@ function pings.PAT(uuid, y, z)
 	end
 end
 events.TICK:register(function()
-	for uuid, time in pairs(entitycooldowns) do
-		entitycooldowns[uuid] = time - 1
+	for uuid, time in pairs(entityCooldowns) do
+		entityCooldowns[uuid] = time - 1
 	end
 end, "PatCubed.TickCooldown")
 
@@ -295,6 +301,11 @@ events.TICK:register(function()
 		end
 
 		local vars = world.avatarVars()[uuid] or {}
+		if not vars.PatCubed then
+			call("compat", "patOther", blockCloser, uuid, block)
+			return
+		end
+
 		if (not maybe_validate(uuid)) and vars.PatCubed then
 			current_prompter = uuid
 			pcall(vars.PatCubed and vars.PatCubed.prompter, avatar:getUUID())
@@ -342,5 +353,16 @@ avatar:store("PatCubed", {
 	validate = current_session_valid,
 	protocol = 1
 })
+
+CONFIG.compat.entityCooldowns = entityCooldowns
+CONFIG.compat.skullCooldowns = skullCooldowns
+CONFIG.compat.whitelisted = whitelisted
+CONFIG.compat.call = call
+CONFIG.compat.timers = timers
+CONFIG.compat.skullTimers = skullTimers
+CONFIG.compat.skullFormat = skullFormat
+
+local auriaCompat, auriaCompatFunc = pcall(require, "Libraries.AuriapatCompat")
+if auriaCompat then auriaCompatFunc(CONFIG) end
 
 return CONFIG

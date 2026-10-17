@@ -15,7 +15,7 @@ local json = {
     hoverEvent = {
         action = "show_text",
         contents = {
-            text = "Idalia, The Metal Catgirl\nPronouns: She/her\nLicensed Colour Fixer\nRuns Birdwatch Office as a Solo Fixer",
+            text = "Idalia, The Metal Catgirl\nPronouns: She/her\nLicensed Colour Fixer\nRuns Birdwatch Office as a Solo Fixer\nDoesn't usually talk unless talked to first",
             color = "#ff0000"
         }
     },

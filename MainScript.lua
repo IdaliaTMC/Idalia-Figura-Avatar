@@ -3,6 +3,7 @@ vanilla_model.ARMOR:setVisible(false)
 vanilla_model.CAPE:setVisible(false)
 models.idalia.WORLD.Freecam.DroneCam.DroneLights.Flash:setVisible(false)
 vanilla_model.RIGHT_ARM:setOffsetRot(0, 0, 7.5)
+avatar:store("patpat.trailColor", "#ff0000")
 
 -- Donator Badge Colour
 avatar:setColor(230/255, 0/255, 0/255, "donator")
@@ -146,6 +147,7 @@ animations.idalia.twilightIdle:setSpeed(0.3)
 -- Set emissive textures
 models.idalia.root:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.Skull:setPrimaryRenderType("TRANSLUCENT_CULL")
+models.idalia.WORLD:setPrimaryRenderType("TRANSLUCENT_CULL")
 backSword:setPrimaryRenderType("TRANSLUCENT")
 models.idalia.root.Body.Coat.LowerCoat:setPrimaryRenderType("TRANSLUCENT")
 models.idalia.ItemTwilight.blade.eyes2:setPrimaryRenderType("EMISSIVE")
@@ -160,6 +162,8 @@ local squapi = require("Libraries.SquAPI")
 local squassets = require("Libraries.SquAPI_modules/SquAssets")
 local dronezAPI = require("Libraries.dronezAPI")
 local runLater = require("Libraries.runLater")
+local TypingSystem = require("Libraries.typing")
+TypingSystem.start()
 
 -- Make player bounce while moving
 local onGround = false
@@ -234,7 +238,7 @@ swingOnBody(models.idalia.root.Body.Coat.LowerCoat, 90, {-30,5,-5,5,-5,5})
 -- Toggling HoloMenu
 function pings.holoMenu(state)
 	--save value so we know not to sync again
-	SyncedMenuState = state
+	MenuState = state
 	if player:isLoaded() then
 		--hide/show holomenu
 		if state then
@@ -249,9 +253,14 @@ end
 
 -- Flight Toggle
 function pings.flight(state)
-	SyncedFlightState = state
+	FlightState = state
     animations.idalia.Flight:setPlaying(state)
 	models.idalia.root.Body.Wings:setVisible(state)
+end
+
+function pings.chat(state)
+	ChatState = state
+    vanilla_model.RIGHT_ITEM:setVisible(not state)
 end
 
 ------------------------------------------------------------------------------- ACTION WHEEL THINGS ------------------------------------------------
@@ -501,15 +510,22 @@ function events.tick()
 	
     --Detect Container open or AFK for HoloMenu
 	if host:isHost() then
-		if (host:isContainerOpen() or not client:isWindowFocused() or host:getScreen() == "net.minecraft.class_433") ~= SyncedMenuState then
+		if (host:isContainerOpen() or not client:isWindowFocused() or host:getScreen() == "net.minecraft.class_433") ~= MenuState then
 			pings.holoMenu(host:isContainerOpen() and not SleepEnabled or not client:isWindowFocused() and not SleepEnabled or host:getScreen() == "net.minecraft.class_433" and not SleepEnabled)
 		end
 	end
 	
 	--Flight detection for flight anim
 	if host:isHost() then
-		if (host:isFlying()) ~= SyncedFlightState then
+		if (host:isFlying()) ~= FlightState then
 			pings.flight(host:isFlying())
+		end
+	end
+
+	--Chat open detection
+	if host:isHost() then
+		if (host:isChatOpen()) ~= ChatState then
+			pings.chat(host:isChatOpen())
 		end
 	end
 
@@ -524,18 +540,18 @@ function events.tick()
 	local emptyMainhand = player:getHeldItem().id == "minecraft:air"
 	
 	-- Play animations in certain scenarios
-	models.idalia.root.Head.HoloMenu:setVisible(SyncedMenuState or (animations.idalia.HoloMenu_Disapear:isPlaying() and animations.idalia.HoloMenu_Disapear:getTime() < 0.46))
-	animations.idalia.RifleHold:setPlaying(rifleOut and not aiming)
+	models.idalia.root.Head.HoloMenu:setVisible(MenuState or (animations.idalia.HoloMenu_Disapear:isPlaying() and animations.idalia.HoloMenu_Disapear:getTime() < 0.46))
+	animations.idalia.RifleHold:setPlaying(rifleOut and not aiming and not ChatState)
 	animations.idalia.RifleAim:setPlaying(rifleOut and aiming)
 	animations.idalia.Idle:setPlaying(
 		emptyOffhand
-		and not SyncedMenuState
+		and not MenuState
 		and not SleepEnabled
 		and not player:isVisuallySwimming()
 		and not rifleOut
 	)
 	vanilla_model.LEFT_ITEM:setVisible(not emptyOffhand)
-	animations.idalia.FlightIdle:setPlaying(SyncedFlightState and emptyMainhand)
+	animations.idalia.FlightIdle:setPlaying(FlightState and emptyMainhand)
 	
 	-- Handle Aiming animation
 	if aiming == true and rifleOut then
