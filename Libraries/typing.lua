@@ -50,9 +50,13 @@ local T = {
     pressSoundId = "minecraft:entity.chicken.step",
     pressSoundVolume = 0.35,
     pressSoundPitch = 0.8,
+    pressSoundSubtitle = "§cIdalia types in the Console",
 
     reverseStartOnClose = true,
 }
+
+local typingSound = sounds[T.pressSoundId]
+typingSound:setVolume(tonumber(T.pressSoundVolume)):setPitch(tonumber(T.pressSoundPitch)):setSubtitle(T.pressSoundSubtitle)
 
 local function animRoot()
     return animations and animations.idalia
@@ -149,13 +153,7 @@ local function emitPressParticle()
         -- SOUND --------------------------------------------------------------
     if T.pressSoundEnabled ~= false then
         pcall(function()
-            sounds:playSound(
-                T.pressSoundId or "minecraft:block.amethyst_block.hit",
-                pos,
-                tonumber(T.pressSoundVolume) or 0.35,
-                tonumber(T.pressSoundPitch) or 1.5,
-                false
-            )
+            typingSound:setPos(pos):play()
         end)
     end
 

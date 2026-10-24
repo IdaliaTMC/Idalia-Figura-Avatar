@@ -196,13 +196,15 @@ local droneObject = dronezAPI.new(models.idalia.WORLD.Birb)
 -- Birb punch shenanigans
 local lastBiteTime = 0
 function droneObject.dronePunched(droneObj, interactor)
-	droneObj.targetEntity = interactor
-	if (world.getTime() - lastBiteTime) > 35 --[[20 = 1s]] then
-		animations.idalia.BirbBite:play()
-		lastBiteTime = world.getTime()
-		sounds:playSound("minecraft:entity.ender_dragon.hurt", droneObj.pos, 0.3, 1.5)
-		sounds:playSound("minecraft:entity.ender_dragon.growl", droneObj.pos, 0.3, 2)
-		runLater(15, function() sounds:playSound("minecraft:entity.evoker_fangs.attack", droneObj.pos, 0.3, 1) end)
+	if interactor:getName() ~= "IdaliaTMC" then
+		droneObj.targetEntity = interactor
+		if (world.getTime() - lastBiteTime) > 35 --[[20 = 1s]] then
+			animations.idalia.BirbBite:play()
+			lastBiteTime = world.getTime()
+			sounds:playSound("minecraft:entity.ender_dragon.hurt", droneObj.pos, 0.3, 1.5)
+			sounds:playSound("minecraft:entity.ender_dragon.growl", droneObj.pos, 0.3, 2)
+			runLater(15, function() sounds:playSound("minecraft:entity.evoker_fangs.attack", droneObj.pos, 0.3, 1) end)
+		end
 	end
 	return 0
 end
@@ -337,16 +339,19 @@ License = mainPage:newAction()
 
 -- SillyPlugin flight toggle
 function FlightToggle(state)
-	if silly then silly:setFly(state) end
+	silly:setFly(state)
 end
 
-FlightToggle = mainPage:newAction()
-    :title("Cannot Fly")
-    :toggleTitle("Can Fly")
-    :item("feather")
-    :toggleItem("elytra")
-    :setOnToggle(FlightToggle)
-
+if silly then
+	if silly:cheatsEnabled() then
+		FlightToggle = mainPage:newAction()
+ 		   :title("Cannot Fly")
+ 		   :toggleTitle("Can Fly")
+ 		   :item("feather")
+ 	 	   :toggleItem("elytra")
+ 		   :setOnToggle(FlightToggle)
+	end
+end
 
 -- Eep syncing
 function events.entity_init()
@@ -552,6 +557,13 @@ function events.tick()
 	)
 	vanilla_model.LEFT_ITEM:setVisible(not emptyOffhand)
 	animations.idalia.FlightIdle:setPlaying(FlightState and emptyMainhand)
+	if player:getVehicle() ~= nil then
+		animations.idalia.Sitting:setPlaying(true)
+		animations.idalia.SittingArm:setPlaying(not ChatState)
+	else
+		animations.idalia.Sitting:setPlaying(false)
+		animations.idalia.SittingArm:setPlaying(false)
+	end
 	
 	-- Handle Aiming animation
 	if aiming == true and rifleOut then
@@ -570,13 +582,6 @@ function events.tick()
 	else
 		models.idalia.WORLD.Birb:setColor(255 / 255, 255 / 255, 255 / 255)
 		droneObject.targetEntity = player
-	end
-
-	-- Sitting pose
-	if player:getVehicle() ~= nil then
-		animations.idalia.Sitting:setPlaying(true)
-	else
-		animations.idalia.Sitting:setPlaying(false)
 	end
 	
 	-- Blinking
