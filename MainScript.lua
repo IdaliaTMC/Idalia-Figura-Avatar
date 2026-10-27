@@ -129,9 +129,6 @@ BladeTrail.configure({
 -- Character 2's old trail used BladeTrailEyes templates. The Character 1 system does not.
 pcall(function() models.idalia.BladeTrailEyes:setVisible(false) end)
 
--- Copy sword to use on the back
-local backSword = models.idalia.ItemTwilight:copy("BackTwilight"):setParentType("MODEL"):moveTo(models.idalia.root.Body):setPos(14,36,1):setRot(0,0,135):setScale(0.95)
-
 -- Animation Settings
 animations.idalia.HoloMenu_Idle:setPlaying(true)
 animations.idalia.Drone:setPlaying(true)
@@ -144,11 +141,17 @@ animations.idalia.Sitting:setPriority(5)
 
 animations.idalia.twilightIdle:setSpeed(0.3)
 
--- Set emissive textures
+-- Copy sword to use on the back
+local backSword = models.idalia.ItemTwilight:copy("BackTwilight"):setParentType("MODEL"):moveTo(models.idalia.root.Body):setPos(14,36,1):setRot(0,0,135):setScale(0.95)
+
+-- Set render types
 models.idalia.root:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.Skull:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.WORLD:setPrimaryRenderType("TRANSLUCENT_CULL")
-backSword:setPrimaryRenderType("TRANSLUCENT")
+models.idalia.ItemStaff.Lamp.Cage:setPrimaryRenderType("TRANSLUCENT_CULL")
+models.idalia.ItemTwilight.guard:setPrimaryRenderType("TRANSLUCENT_CULL")
+backSword:setPrimaryRenderType("CUTOUT")
+backSword.guard:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.root.Body.Coat.LowerCoat:setPrimaryRenderType("TRANSLUCENT")
 models.idalia.ItemTwilight.blade.eyes2:setPrimaryRenderType("EMISSIVE")
 models.idalia.Arrow:setPrimaryRenderType("EMISSIVE")

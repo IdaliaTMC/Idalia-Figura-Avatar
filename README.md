@@ -18,6 +18,6 @@ Blade Trail, Combat System and typing anim - UndeadReturns<br>
 BobFreeCam - BobIsBilly<br>
 DronezAPI - PirateSee<br>
 Lift - Fox AKA Bitslayn<br>
-Pat³ - BeanGalSolina, NikoSolstice, Tiv<br>
+Fox's Pat Protocol - Fox AKA Bitslayn<br>
 Pronouns script - NikoSolstice<br>
 SquAPI and it's modules - MrSirSquishy
