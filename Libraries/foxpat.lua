@@ -3,7 +3,7 @@ ____  ___ __   __
 | __|/ _ \\ \ / /
 | _|| (_) |> w <
 |_|  \___//_/ \_\
-FOX's Patpat v2.0b
+FOX's Patpat v2.1
 
 Github: https://github.com/Bitslayn/FOXPat
 ]]
@@ -20,8 +20,9 @@ lib.config = {
 	---List of names or uuids that are allowed to pat you
 	---@type table<string, boolean>
 	whitelist = {
-
-		},
+		-- Steve = true,
+		-- ["8667ba71-b85a-4004-af54-457a9734eed7"] = true,
+	},
 	---Whether the whitelists table acts as a blacklist
 	use_blacklist = true,
 
@@ -180,72 +181,6 @@ end
 --#REGION ˚♡ Outgoing Library ♡˚
 --==============================================================================================================================
 
----@type {id: string, func: fun(target_uuid: string, target_vars: table, pos: Vector3, is_block: boolean)}[]
-local handlers = {
-	{
-		id = "FOXPat",
-		func = function(_, target_vars, pos, is_block)
-			local uuid = avatar:getUUID()
-			if is_block then
-				assert(target_vars.FOXPat.skull_pat(uuid, pos:unpack()))
-			else
-				assert(target_vars.FOXPat.entity_pat(uuid))
-			end
-		end,
-	},
-	{
-		id = "catpat",
-		func = function(target_uuid, target_vars, pos, is_block)
-			avatar:store("catpat", {
-				confirm = function()
-					return target_uuid
-				end,
-			})
-
-			local id = is_block and 2 or 1
-			local accepted = target_vars.catpat.pat(avatar:getUUID(), id, pos:unpack())
-			avatar:store("catpat")
-			assert(accepted)
-		end,
-	},
-	{
-		id = "PatCubed",
-		func = function(_, target_vars, pos, is_block)
-			local api
-			avatar:store("PatCubed", {
-				acceptor = function(_api)
-					api = _api
-				end,
-			})
-
-			target_vars.PatCubed.prompter(avatar:getUUID())
-
-			local key = is_block and "skull" or "player"
-			local accepted = api[key](lib.config.expire_time, pos:unpack())
-			avatar:store("PatCubed")
-			assert(accepted)
-		end,
-	},
-	{
-		id = "petpet",
-		func = function(target_uuid, target_vars, pos, is_block)
-			assert(not target_vars.noPats)
-
-			local key = is_block and "petpet.playerHead" or "petpet"
-			local noPats, noHearts = target_vars[key](avatar:getUUID(), lib.config.expire_time, pos:unpack())
-			assert(not noPats)
-
-			if noHearts then return end
-			if is_block then
-				lib.action.create_particle(pos + vec(0.5, 0, 0.5), vec(0.5, 0.5, 0.5))
-			else
-				local entity = world.getEntity(target_uuid)
-				lib.action.create_particle(pos, entity:getBoundingBox())
-			end
-		end,
-	},
-}
-
 ---Grabs the uuid from this skull's nbt
 ---
 ---Always returns a string to avoid unintentionally erroring when indexing avatar vars
@@ -296,16 +231,19 @@ local function try_patting(target)
 	local target_vars = world.avatarVars()[target_uuid]
 	if not target_vars then return end
 
+	local uuid = avatar:getUUID()
 	local pos = target:getPos()
 
-	for i = 1, #handlers do
-		if target_vars[handlers[i].id] then
-			safe_call(function()
-				handlers[i].func(target_uuid, target_vars, pos, is_block)
-				lib.action.swing_arm()
-			end)
+	safe_call(function()
+		local swing_arm
+		if is_block then
+			swing_arm = target_vars.patpat.skull(uuid, pos:unpack())
+		else
+			swing_arm = target_vars.patpat.player(uuid)
 		end
-	end
+		if not swing_arm then return end
+		lib.action.swing_arm()
+	end)
 end
 
 local isHost = host:isHost()
@@ -333,7 +271,7 @@ lib.pat = try_patting
 --==============================================================================================================================
 
 local vars = {}
-avatar:store("FOXPat", vars)
+avatar:store("patpat", vars)
 
 ---@alias FOXPat.Group {events: table<string, function[]>, event: Event.Generic, timers: table<string, integer>, counter: integer }
 local entity_group = { events = lib.events.entity, event = events.render, timers = {}, counter = 0 }
@@ -350,7 +288,7 @@ end
 ---Pats this avatar's entity
 ---@param uuid string
 ---@return boolean accepted
-function vars.entity_pat(uuid)
+function vars.player(uuid)
 	if not check_whitelist(uuid) then return false end
 	accept_patter(entity_group, uuid)
 	lib.action.create_particle(player:getPos(client.getFrameTime()), player:getBoundingBox())
@@ -363,7 +301,7 @@ end
 ---@param y number
 ---@param z number
 ---@return boolean accepted
-function vars.skull_pat(uuid, x, y, z)
+function vars.skull(uuid, x, y, z)
 	if not check_whitelist(uuid) then return false end
 	local pos = vectors.vec3(x, y, z):floor()
 	accept_patter(skull_group, uuid, pos)

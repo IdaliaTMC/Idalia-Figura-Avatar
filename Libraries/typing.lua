@@ -70,7 +70,7 @@ end
 
 local function getParticleEmitter()
     local ok, emitter = pcall(function()
-        return models.idalia.root.Body.RightArm.RightAim.RightLowerArm.ParticleEmitter
+        return models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.ParticleEmitter
     end)
     if not ok then return nil end
     return emitter

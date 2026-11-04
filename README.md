@@ -21,3 +21,4 @@ Lift - Fox AKA Bitslayn<br>
 Fox's Pat Protocol - Fox AKA Bitslayn<br>
 Pronouns script - NikoSolstice<br>
 SquAPI and it's modules - MrSirSquishy
+Just Lean 3 - xandercreates

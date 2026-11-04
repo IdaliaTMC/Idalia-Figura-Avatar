@@ -2,7 +2,6 @@ vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(false)
 vanilla_model.CAPE:setVisible(false)
 models.idalia.WORLD.Freecam.DroneCam.DroneLights.Flash:setVisible(false)
-vanilla_model.RIGHT_ARM:setOffsetRot(0, 0, 7.5)
 avatar:store("patpat.trailColor", "#ff0000")
 
 -- Donator Badge Colour
@@ -11,7 +10,7 @@ avatar:setColor(230/255, 0/255, 0/255, "donator")
 -- Create variables for things
 local aiming = nil
 local wasAiming = nil
-local sleepEnabled = false
+local SleepEnabled = false
 
 --Configure Custom Sounds
 local soundTwilight = sounds["Hit"]
@@ -94,7 +93,7 @@ BladeTrail.configure({
 
 	-- Character 1 trail engine, attached to Idalia's existing authored BladeTrail.
 	modelRoot=models.idalia,
-	sourcePart=models.idalia.root.Body.RightArm.RightAim.RightLowerArm.RightItemPivot.BladeTrail,
+	sourcePart=models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.RightItemPivot.BladeTrail,
 	families={Normal=true,Alt=true},
 
 	-- Character 1 / MariaTrail behavior.
@@ -142,31 +141,51 @@ animations.idalia.Sitting:setPriority(5)
 animations.idalia.twilightIdle:setSpeed(0.3)
 
 -- Copy sword to use on the back
-local backSword = models.idalia.ItemTwilight:copy("BackTwilight"):setParentType("MODEL"):moveTo(models.idalia.root.Body):setPos(14,36,1):setRot(0,0,135):setScale(0.95)
+local backSword = models.idalia.ItemTwilight:copy("BackTwilight"):setParentType("MODEL"):moveTo(models.idalia.root.Torso.Body):setPos(14,36,1):setRot(0,0,135):setScale(0.95)
 
 -- Set render types
 models.idalia.root:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.Skull:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.WORLD:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.ItemStaff.Lamp.Cage:setPrimaryRenderType("TRANSLUCENT_CULL")
+models.idalia.ItemRifle:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.ItemTwilight.guard:setPrimaryRenderType("TRANSLUCENT_CULL")
 backSword:setPrimaryRenderType("CUTOUT")
 backSword.guard:setPrimaryRenderType("TRANSLUCENT_CULL")
-models.idalia.root.Body.Coat.LowerCoat:setPrimaryRenderType("TRANSLUCENT")
-models.idalia.ItemTwilight.blade.eyes2:setPrimaryRenderType("EMISSIVE")
+models.idalia.root.Torso.Body.Coat.LowerCoat:setPrimaryRenderType("TRANSLUCENT")
+models.idalia.ItemTwilight.blade.eyes2:setPrimaryRenderType("EMISSIVE_SOLID")
 models.idalia.Arrow:setPrimaryRenderType("EMISSIVE")
-models.idalia.root.Body.Wings.RightWingPivot.RightWingEyes:setPrimaryRenderType("EMISSIVE")
-models.idalia.root.Body.Wings.LeftWingPivot.LeftWingEyes:setPrimaryRenderType("EMISSIVE")
-models.idalia.WORLD.Freecam.DroneCam.DroneLights:setPrimaryRenderType("EMISSIVE")
-models.idalia.root.Head.Eyes.Irises:setPrimaryRenderType("EMISSIVE")
+models.idalia.root.Torso.Body.Wings.RightWingPivot.RightWingEyes:setPrimaryRenderType("EMISSIVE")
+models.idalia.root.Torso.Body.Wings.LeftWingPivot.LeftWingEyes:setPrimaryRenderType("EMISSIVE")
+models.idalia.WORLD.Freecam.DroneCam.DroneLights:setPrimaryRenderType("EMISSIVE_SOLID")
+models.idalia.root.Torso.PivotHead.Head.Eyes.Irises:setPrimaryRenderType("EMISSIVE_SOLID")
 
 -- Dependancies
 local squapi = require("Libraries.SquAPI")
-local squassets = require("Libraries.SquAPI_modules/SquAssets")
+local squassets = require("Libraries.SquAPI_modules.SquAssets")
 local dronezAPI = require("Libraries.dronezAPI")
 local runLater = require("Libraries.runLater")
 local TypingSystem = require("Libraries.typing")
+local JustLean3 = require("Libraries.just-lean-3")
 TypingSystem.start()
+
+-- Just Lean 3 stuff 
+local root = models.idalia.root
+local torsopart = root.Torso
+local leftarm = torsopart.LeftArm
+local rightarm = torsopart.RightArm
+local model_head = torsopart.PivotHead.Head
+local leftleg = root.LeftLeg
+local rightleg = root.RightLeg
+local jl3settings = JustLean3.settings
+
+
+local torso = JustLean3.lean:new(3, torsopart, 0.5, vec(0,12,0), true, {{-20,20},{-22.5,22.5}}, vec(0.95,0.5,1), true, false, "smooth", true) --Torso
+local head = JustLean3.head:new(3, model_head, 0.75, true, {{-90,90},{-45,45}}, vec(0.95, 0.95, 0.25), torso) --Head
+local left_arm = JustLean3.arms:new(1, leftarm, 0.5, true, vec(0.2,1,0.2))
+local right_arm = JustLean3.arms:new(2, rightarm, 0.5, true, vec(0.2,1,0.2))
+local left_leg = JustLean3.legs:new(1, leftleg, 0.5, true, vec(1, 0.5, 0.1), true)
+local right_leg = JustLean3.legs:new(2, rightleg, 0.5, true, vec(1, 0.5, 0.1), true)
 
 -- Make player bounce while moving
 local onGround = false
@@ -174,15 +193,6 @@ local bounce = squapi.bounceWalk:new(
     models.idalia.root,    --model
     0.0     --(1) bounceMultiplier
 )
-
--- Initialize body lean variables
-local bodyPitch = 0
-local bodyRoll = 0
-local armSpread = 0
-
-local bodyPitchOld = 0
-local bodyRollOld = 0
-local armSpreadOld = 0
 
 -- Punishing bird that follows player
 animations.idalia.BirbIdle:play()
@@ -214,8 +224,8 @@ end
 
 -- Ear physics
 squapi.ear:new(
-    models.idalia.root.Head.LeftEar, --leftEar
-    models.idalia.root.Head.RightEar, --(nil) rightEar
+    models.idalia.root.Torso.PivotHead.Head.LeftEar, --leftEar
+    models.idalia.root.Torso.PivotHead.Head.RightEar, --(nil) rightEar
     0.5, --(1) rangeMultiplier
     true, --(false) horizontalEars
     1, --(2) bendStrength
@@ -229,16 +239,16 @@ squapi.ear:new(
 local SwingingPhysics = require("Libraries.swinging_physics")
 local swingOnBody = SwingingPhysics.swingOnBody
 
-swingOnBody(models.idalia.root.Body.scarf, 90, {-20,10,-50,50,-50,50})
-swingOnBody(models.idalia.root.Body.scarf2, 90, {-20,10,-50,50,-50,50})
+swingOnBody(models.idalia.root.Torso.Body.scarf, 90, {-20,10,-50,50,-50,50})
+swingOnBody(models.idalia.root.Torso.Body.scarf2, 90, {-20,10,-50,50,-50,50})
 
-swingOnBody(models.idalia.root.Body.scarf.bone3, 90, {-30,5,-5,5,-5,5})
-swingOnBody(models.idalia.root.Body.scarf2.bone5, 90, {-30,5,-5,5,-5,5})
+swingOnBody(models.idalia.root.Torso.Body.scarf.bone3, 90, {-30,5,-5,5,-5,5})
+swingOnBody(models.idalia.root.Torso.Body.scarf2.bone5, 90, {-30,5,-5,5,-5,5})
 
-swingOnBody(models.idalia.root.Body.scarf.bone3.bone4, 90, {-5,2,-2,2,-2,2})
-swingOnBody(models.idalia.root.Body.scarf2.bone5.bone6, 90, {-5,2,-2,2,-2,2})
+swingOnBody(models.idalia.root.Torso.Body.scarf.bone3.bone4, 90, {-5,2,-2,2,-2,2})
+swingOnBody(models.idalia.root.Torso.Body.scarf2.bone5.bone6, 90, {-5,2,-2,2,-2,2})
 
-swingOnBody(models.idalia.root.Body.Coat.LowerCoat, 90, {-30,5,-5,5,-5,5})
+swingOnBody(models.idalia.root.Torso.Body.Coat.LowerCoat, 90, {-30,5,-5,5,-5,5})
 
 -- Toggling HoloMenu
 function pings.holoMenu(state)
@@ -260,7 +270,7 @@ end
 function pings.flight(state)
 	FlightState = state
     animations.idalia.Flight:setPlaying(state)
-	models.idalia.root.Body.Wings:setVisible(state)
+	models.idalia.root.Torso.Body.Wings:setVisible(state)
 end
 
 function pings.chat(state)
@@ -278,6 +288,11 @@ function pings.ToggleSleep(state)
     models.idalia.EepEffect:setVisible(state)
     animations.idalia.Sleep:setPlaying(state)
     config:save("Sleep", state)
+	if state then
+		JustLean3:disable()
+	else
+		JustLean3:enable()
+	end
 end
 
 -- Eep syncing
@@ -317,6 +332,11 @@ function pings.Stagger(state)
 	if state == true and player:isLoaded() then
 		soundStagger:setPos(player:getPos()):play()
 	end
+	if state then
+		JustLean3:disable()
+	else
+		JustLean3:enable()
+	end
 end
 
 -- Stagger action wheel
@@ -330,7 +350,7 @@ Stagger = mainPage:newAction()
 -- Fixer License pull out Toggle
 function pings.License(state)
 	animations.idalia.ShowLicense:setPlaying(state)
-	models.idalia.root.Body.RightArm.RightAim.RightLowerArm.License:setVisible(state)
+	models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.License:setVisible(state)
 end
 
 License = mainPage:newAction()
@@ -381,8 +401,8 @@ local screenshotKey = keybinds:newKeybind("Screenshot", "key.keyboard.f2")
 screenshotKey.press = pings.screenshot
 
 -- Fixer License text
-local licensePicture = models.idalia.root.Body.RightArm.RightAim.RightLowerArm.License:newText("LicensePicture")
-local licenseText = models.idalia.root.Body.RightArm.RightAim.RightLowerArm.License:newText("LicenseText")
+local licensePicture = models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.License:newText("LicensePicture")
+local licenseText = models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.License:newText("LicenseText")
 licensePicture:setText(":@idalia:"):setScale(0.13):setOutline(true):setPos(-1.5,2.5,-0.05)
 licenseText:setText("§cName: Idalia\nGender: Female\n\nGrade: The Scarlet Justice\nOffice: Birdwatch Office\n\nSworn to protect those she\ncares for at any cost")
 	:setScale(0.035):setOutline(true):setPos(2.5,2.4,-0.05)
@@ -480,12 +500,6 @@ end
 function events.render(delta, context)
     -- Keep a final safety margin for the main render callback itself.
     if not PerformanceBudget.renderAllowed(0.92) then return end
-    
-    -- Body leaning towards movement
-    models.idalia.root:setRot(math.lerpAngle(bodyPitchOld*0.25, bodyPitch*0.25, delta),0,math.lerpAngle(bodyRollOld*0.25, bodyRoll*0.25, delta))
-    models.idalia.root.Body:setRot(math.lerpAngle(bodyPitchOld*0.75, bodyPitch*0.75, delta),0,math.lerpAngle(bodyRollOld*0.75, bodyRoll*0.75, delta))
-    models.idalia.root.Body.RightArm:setRot(0,0,math.lerpAngle(armSpreadOld, armSpread, delta))
-    models.idalia.root.Body.LeftArm:setRot(0,0,math.lerpAngle(-armSpreadOld, -armSpread, delta))
 		
     -- Use bounce walk only on ground
     if player:isOnGround() and not onGround then
@@ -495,9 +509,6 @@ function events.render(delta, context)
         onGround = false
         bounce.bounceMultiplier = 0.0
     end
-	
-	--First person hand fix
-	models.idalia.root.RightArmFirstPerson:setVisible(context:find("FIRST"))
 end
 
 -- Arrow particle trailing
@@ -515,7 +526,7 @@ end
 -------------------------------------------------------------------------------------------TICK EVENT--------------------------------------------------
 function events.tick()
 	PerformanceBudget.beginTick()
-	
+
     --Detect Container open or AFK for HoloMenu
 	if host:isHost() then
 		if (host:isContainerOpen() or not client:isWindowFocused() or host:getScreen() == "net.minecraft.class_433") ~= MenuState then
@@ -546,13 +557,22 @@ function events.tick()
 	aiming = player:getActiveItem():getUseAction() == "BOW"
 	local emptyOffhand = player:getHeldItem(true).id == "minecraft:air" or player:getHeldItem(true).id == "minecraft:shield"
 	local emptyMainhand = player:getHeldItem().id == "minecraft:air"
+	local crouching = player:getPose() == "CROUCHING"
 	
 	-- Play animations in certain scenarios
-	models.idalia.root.Head.HoloMenu:setVisible(MenuState or (animations.idalia.HoloMenu_Disapear:isPlaying() and animations.idalia.HoloMenu_Disapear:getTime() < 0.46))
+	models.idalia.root.Torso.PivotHead.Head.HoloMenu:setVisible(MenuState or (animations.idalia.HoloMenu_Disapear:isPlaying() and animations.idalia.HoloMenu_Disapear:getTime() < 0.46))
 	animations.idalia.RifleHold:setPlaying(rifleOut and not aiming and not ChatState)
 	animations.idalia.RifleAim:setPlaying(rifleOut and aiming)
 	animations.idalia.Idle:setPlaying(
 		emptyOffhand
+		and not MenuState
+		and not SleepEnabled
+		and not player:isVisuallySwimming()
+		and not rifleOut
+		and not crouching
+	)
+	animations.idalia.CrouchIdle:setPlaying(crouching
+		and emptyOffhand
 		and not MenuState
 		and not SleepEnabled
 		and not player:isVisuallySwimming()
@@ -570,13 +590,13 @@ function events.tick()
 	
 	-- Handle Aiming animation
 	if aiming == true and rifleOut then
-		models.idalia.root.Body.RightArm.RightAim:setRot(headRot.x,0,headRot.y*-1)
-		models.idalia.root.Body.RightArm.RightAim.LeftCopy:setVisible(true)
-		models.idalia.root.Body.LeftArm:setVisible(false)
+		models.idalia.root.Torso.RightArm.RightAim:setRot(headRot.x,0,headRot.y*-1)
+		models.idalia.root.Torso.RightArm.RightAim.LeftCopy:setVisible(true)
+		models.idalia.root.Torso.LeftArm:setVisible(false)
 	else
-		models.idalia.root.Body.RightArm.RightAim:setRot(0,0,0)
-		models.idalia.root.Body.RightArm.RightAim.LeftCopy:setVisible(false)
-		models.idalia.root.Body.LeftArm:setVisible(true)
+		models.idalia.root.Torso.RightArm.RightAim:setRot(0,0,0)
+		models.idalia.root.Torso.RightArm.RightAim.LeftCopy:setVisible(false)
+		models.idalia.root.Torso.LeftArm:setVisible(true)
 	end
 	
 	-- Birb Bite recolour and targetting
@@ -640,39 +660,7 @@ function events.tick()
             pings.syncStates(SleepEnabled)
         end
     end
-    
-    -- Calculate body lean tilting
-    local targetBodyPitch = squassets.forwardVel()*-75 + squassets.verticalVel()*-10
-    local targetBodyRoll = squassets.sideVel()*50
-    local targetArmSpread = squassets.verticalVel()*-15
-    
-    -- Invert in vechiles, so less like leaning and more like air friction
-    if player:getVehicle() then
-        targetBodyPitch = targetBodyPitch*-0.5
-        targetBodyRoll = targetBodyRoll*-0.5
-    end
-    
-    -- Save values for smoothing
-    bodyPitchOld = bodyPitch
-    bodyRollOld = bodyRoll
-    armSpreadOld = armSpread
-    
-    -- Smooth turning, but don't adjust if close enough (fixes some jank)
-	if math.abs(bodyPitch-targetBodyPitch) > 0.1 then
-		bodyPitch = math.lerp(bodyPitch, targetBodyPitch, 0.2)
-	end
-	if math.abs(bodyRoll-targetBodyRoll) > 0.1 then
-		bodyRoll = math.lerp(bodyRoll, targetBodyRoll, 0.2)
-	end
-	if math.abs(armSpread-targetArmSpread) > 0.1 then
-		armSpread = math.lerp(armSpread, targetArmSpread, 0.2)
-	end
 
-    -- Clamp
-    bodyPitch = math.max(math.min(bodyPitch, 20),-20)
-    bodyRoll = math.max(math.min(bodyRoll, 15),-15)
-    armSpread = math.max(math.min(armSpread, 15), -5)
-	
 	-- Death sound
 	if player:isLoaded() then
 		if player:getDeathTime() == 1 then
