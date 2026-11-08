@@ -93,7 +93,7 @@ BladeTrail.configure({
 
 	-- Character 1 trail engine, attached to Idalia's existing authored BladeTrail.
 	modelRoot=models.idalia,
-	sourcePart=models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.RightItemPivot.BladeTrail,
+	sourcePart=models.idalia.root.Torso.RightArm.RightLowerArm.RightItemPivot.BladeTrail,
 	families={Normal=true,Alt=true},
 
 	-- Character 1 / MariaTrail behavior.
@@ -148,13 +148,12 @@ models.idalia.root:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.Skull:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.WORLD:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.ItemStaff.Lamp.Cage:setPrimaryRenderType("TRANSLUCENT_CULL")
-models.idalia.ItemRifle:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.ItemTwilight.guard:setPrimaryRenderType("TRANSLUCENT_CULL")
 backSword:setPrimaryRenderType("CUTOUT")
 backSword.guard:setPrimaryRenderType("TRANSLUCENT_CULL")
 models.idalia.root.Torso.Body.Coat.LowerCoat:setPrimaryRenderType("TRANSLUCENT")
 models.idalia.ItemTwilight.blade.eyes2:setPrimaryRenderType("EMISSIVE_SOLID")
-models.idalia.Arrow:setPrimaryRenderType("EMISSIVE")
+models.idalia.Arrow:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
 models.idalia.root.Torso.Body.Wings.RightWingPivot.RightWingEyes:setPrimaryRenderType("EMISSIVE")
 models.idalia.root.Torso.Body.Wings.LeftWingPivot.LeftWingEyes:setPrimaryRenderType("EMISSIVE")
 models.idalia.WORLD.Freecam.DroneCam.DroneLights:setPrimaryRenderType("EMISSIVE_SOLID")
@@ -179,7 +178,7 @@ local leftleg = root.LeftLeg
 local rightleg = root.RightLeg
 local jl3settings = JustLean3.settings
 
-local torso = JustLean3.lean:new(3, torsopart, 0.5, vec(0,12,0), true, {{-20,20},{-22.5,22.5}}, vec(0.95,0.5,1), true, false, "smooth", true) --Torso
+local torso = JustLean3.lean:new(3, torsopart, 0.5, vec(0,12,0), true, {{-25,25},{-22.5,22.5}}, vec(0.95,0.5,1), true, false, "smooth", true) --Torso
 local head = JustLean3.head:new(3, model_head, 0.75, true, {{-90,90},{-45,45}}, vec(0.95, 0.95, 0.25), torso) --Head
 local left_arm = JustLean3.arms:new(1, leftarm, 0.5, true, vec(0.2,1,0.2))
 local right_arm = JustLean3.arms:new(2, rightarm, 0.5, true, vec(0.2,1,0.2))
@@ -349,7 +348,7 @@ Stagger = mainPage:newAction()
 -- Fixer License pull out Toggle
 function pings.License(state)
 	animations.idalia.ShowLicense:setPlaying(state)
-	models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.License:setVisible(state)
+	models.idalia.root.Torso.RightArm.RightLowerArm.License:setVisible(state)
 end
 
 License = mainPage:newAction()
@@ -400,8 +399,8 @@ local screenshotKey = keybinds:newKeybind("Screenshot", "key.keyboard.f2")
 screenshotKey.press = pings.screenshot
 
 -- Fixer License text
-local licensePicture = models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.License:newText("LicensePicture")
-local licenseText = models.idalia.root.Torso.RightArm.RightAim.RightLowerArm.License:newText("LicenseText")
+local licensePicture = models.idalia.root.Torso.RightArm.RightLowerArm.License:newText("LicensePicture")
+local licenseText = models.idalia.root.Torso.RightArm.RightLowerArm.License:newText("LicenseText")
 licensePicture:setText(":@idalia:"):setScale(0.13):setOutline(true):setPos(-1.5,2.5,-0.05)
 licenseText:setText("§cName: Idalia\nGender: Female\n\nGrade: The Scarlet Justice\nOffice: Birdwatch Office\n\nSworn to protect those she\ncares for at any cost")
 	:setScale(0.035):setOutline(true):setPos(2.5,2.4,-0.05)
@@ -409,7 +408,7 @@ licenseText:setText("§cName: Idalia\nGender: Female\n\nGrade: The Scarlet Justi
 -------------------------------------------------------------------------------------------ITEM RENDER EVENT--------------------------------------------------
 function events.item_render(item, context)
     -- If valid Sword name, hold Twilight
-    if validSword[item:getName()] then
+    if validSword[item:getName()] or item.id == "minecraft:bow" then
         if context:find("FIRST") then
             return models.idalia.ItemTwilight:setPos(0,4,0):setScale(0.6)
         else
@@ -425,17 +424,6 @@ function events.item_render(item, context)
 			return models.idalia.ItemStaff:setRot(0,0,0):setScale(0.9)
 		else
 			return models.idalia.ItemStaff:setRot(30,0,0):setScale(1.3)
-		end
-    end
-	
-	-- If valid Rifle name, Hold the Rifle Alteration
-	if validRifle[item:getName()] then
-        if aiming == true and context:find("FIRST") then
-			return models.idalia.ItemRifle:setRot(20,0,5):setPos(0,10,0):setScale(1)
-		elseif context:find("FIRST") then
-			return models.idalia.ItemRifle:setRot(0,0,0):setPos(0,0,-5):setScale(1.5)
-		else
-			return models.idalia.ItemRifle:setRot(0,0,0):setPos(0,0,-2):setScale(1)
 		end
     end
 end
@@ -510,16 +498,15 @@ function events.render(delta, context)
     end
 end
 
--- Arrow particle trailing
-function events.arrow_render(delta, arrow)
-    if not player:isLoaded() then return end
-	if arrow:getVelocity() ~= vec(0,0,0) then
-		particles["end_rod"]
-			:pos(arrow:getPos())
-			:scale(1)
-			:color(1,1,0)
-			:spawn()
-	end
+-------------------------------------------------------------------------------------------OTHER EVENTS-----------------------------------------------
+function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
+    if not path or not pos then return end
+    if id ~= "minecraft:entity.arrow.shoot" then return end
+    if category ~= "PLAYERS" and category ~= "PLAYER" then return end
+
+    if (pos - player:getPos()):lengthSquared() <= 0.64 then
+        return true
+    end
 end
 
 -------------------------------------------------------------------------------------------TICK EVENT--------------------------------------------------
@@ -549,9 +536,8 @@ function events.tick()
 
     -- Detect various things for animations
     local item = player:getHeldItem()
-    local swordOut = validSword[item:getName()]
+    local swordOut = validSword[item:getName()] or item.id == "minecraft:bow"
     local staffOut = validStaff[item:getName()]
-	local rifleOut = validRifle[item:getName()]
 	local headRot = vanilla_model.HEAD:getOriginRot()
 	aiming = player:getActiveItem():getUseAction() == "BOW"
 	local emptyOffhand = player:getHeldItem(true).id == "minecraft:air" or player:getHeldItem(true).id == "minecraft:shield"
@@ -560,14 +546,12 @@ function events.tick()
 	
 	-- Play animations in certain scenarios
 	models.idalia.root.Torso.PivotHead.Head.HoloMenu:setVisible(MenuState or (animations.idalia.HoloMenu_Disapear:isPlaying() and animations.idalia.HoloMenu_Disapear:getTime() < 0.46))
-	animations.idalia.RifleHold:setPlaying(rifleOut and not aiming and not ChatState)
-	animations.idalia.RifleAim:setPlaying(rifleOut and aiming)
+	animations.idalia.Charging:setPlaying(swordOut and aiming)
 	animations.idalia.Idle:setPlaying(
 		emptyOffhand
 		and not MenuState
 		and not SleepEnabled
 		and not player:isVisuallySwimming()
-		and not rifleOut
 		and not crouching
 	)
 	animations.idalia.CrouchIdle:setPlaying(crouching
@@ -575,7 +559,6 @@ function events.tick()
 		and not MenuState
 		and not SleepEnabled
 		and not player:isVisuallySwimming()
-		and not rifleOut
 	)
 	vanilla_model.LEFT_ITEM:setVisible(not emptyOffhand)
 	animations.idalia.FlightIdle:setPlaying(FlightState and emptyMainhand)
@@ -585,17 +568,6 @@ function events.tick()
 	else
 		animations.idalia.Sitting:setPlaying(false)
 		animations.idalia.SittingArm:setPlaying(false)
-	end
-	
-	-- Handle Aiming animation
-	if aiming == true and rifleOut then
-		models.idalia.root.Torso.RightArm.RightAim:setRot(headRot.x,0,headRot.y*-1)
-		models.idalia.root.Torso.RightArm.RightAim.LeftCopy:setVisible(true)
-		models.idalia.root.Torso.LeftArm:setVisible(false)
-	else
-		models.idalia.root.Torso.RightArm.RightAim:setRot(0,0,0)
-		models.idalia.root.Torso.RightArm.RightAim.LeftCopy:setVisible(false)
-		models.idalia.root.Torso.LeftArm:setVisible(true)
 	end
 	
 	-- Birb Bite recolour and targetting
@@ -618,14 +590,15 @@ function events.tick()
 	models.idalia.ItemStaff.Lamp.Cage.Fire:setUV(math.floor(time/3)/8,0)
 	models.idalia.ItemStaff.Lamp.Cage.Fire2:setUV(math.floor(time/3)/8,0)
 	
-	-- Play Rifle firing sound
+	-- handle Bow animation
 	if wasAiming and not aiming then
-		sounds:playSound("minecraft:item.mace.smash_ground_heavy", player:getPos(), 0.8, 0.5, false)
+		animations.idalia.Fire:play()
+		sounds:playSound("minecraft:entity.wind_charge.wind_burst", player:getPos(), 0.5, 0.7, false)
 	end
 	wasAiming = aiming
 	
     -- Toggle Twilight on back if holding Twilight
-    backSword:setVisible(not swordOut and not staffOut and not rifleOut)
+    backSword:setVisible(not swordOut and not staffOut)
 	
 	-- Idle weapons holding animations
 	animations.idalia.twilightIdle:setPlaying(swordOut and not Combat.isAnimationActive())
