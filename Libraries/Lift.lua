@@ -21,10 +21,7 @@ local cfg = {
 	enabled = true,
 	---List of names who are allowed to call your functions
 	whitelist = {
-		JavaEnderMan = true,
-		ever_4 = true,
-		Jeungbeen = true,
-		UndeadReturns = true,
+		UndeadReturns = true
 	},
 
 	---Set the max pos distance from player

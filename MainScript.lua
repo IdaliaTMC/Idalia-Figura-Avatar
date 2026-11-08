@@ -179,7 +179,6 @@ local leftleg = root.LeftLeg
 local rightleg = root.RightLeg
 local jl3settings = JustLean3.settings
 
-
 local torso = JustLean3.lean:new(3, torsopart, 0.5, vec(0,12,0), true, {{-20,20},{-22.5,22.5}}, vec(0.95,0.5,1), true, false, "smooth", true) --Torso
 local head = JustLean3.head:new(3, model_head, 0.75, true, {{-90,90},{-45,45}}, vec(0.95, 0.95, 0.25), torso) --Head
 local left_arm = JustLean3.arms:new(1, leftarm, 0.5, true, vec(0.2,1,0.2))
@@ -214,7 +213,7 @@ function droneObject.dronePunched(droneObj, interactor)
 		if (world.getTime() - lastBiteTime) > 35 --[[20 = 1s]] then
 			animations.idalia.BirbBite:play()
 			lastBiteTime = world.getTime()
-			sounds:playSound("minecraft:entity.ender_dragon.hurt", droneObj.pos, 0.3, 1.5)
+			sounds:playSound("minecraft:entity.ender_dragon.hurt", droneObj.pos, 0.15, 1.5)
 			sounds:playSound("minecraft:entity.ender_dragon.growl", droneObj.pos, 0.3, 2)
 			runLater(15, function() sounds:playSound("minecraft:entity.evoker_fangs.attack", droneObj.pos, 0.3, 1) end)
 		end
