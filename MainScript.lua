@@ -500,6 +500,7 @@ end
 
 -------------------------------------------------------------------------------------------OTHER EVENTS-----------------------------------------------
 function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
+	if not player:isLoaded() then return end
     if not path or not pos then return end
     if id ~= "minecraft:entity.arrow.shoot" then return end
     if category ~= "PLAYERS" and category ~= "PLAYER" then return end
